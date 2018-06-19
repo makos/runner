@@ -41,9 +41,10 @@ namespace Runner
             // Load textures into the array to be passed 
             for (int i = 0; i < 8; i++)
             {
+                // TODO
                 // Because last two (ducking) sprites are different width, we have to check for it
                 // This doesn't work, thanks google
-                // TODO
+                // Also just make this better
                 if (i > 5)
                 {
                     Console.WriteLine(spriteSheetDict["TREX"].X + (playerSize.X * i));
@@ -124,6 +125,8 @@ namespace Runner
 
         void LoadSpriteCoords()
         {
+            // TODO
+            // Load sprite coordinates from an xml; possibly include more info (width & height of the sprite) in a class instead of just a vector2?
             XmlDocument spriteXml = new XmlDocument();
             spriteXml.Load("sprite\\sheet.xml");
 

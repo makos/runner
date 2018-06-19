@@ -1,4 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- TODO Add dimensions of the sprite -->
 <sheet>
   <sprite x="848" y="2">TREX</sprite>
   <sprite x="2" y="54">GROUND</sprite>

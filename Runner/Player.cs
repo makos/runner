@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using SFML;
+﻿using SFML;
 using SFML.System;
 using SFML.Window;
 using SFML.Graphics;
@@ -9,7 +7,7 @@ namespace Runner
 {
     class Player
     {
-        // Finite state machines yay!
+        // Finite state machines, yay!
         enum State
         {
             Run, Jump, Duck
@@ -53,16 +51,16 @@ namespace Runner
             if (IsColliding(deltaTime, level.collider.GetGlobalBounds()))
             {
                 YVelocity = 0f;
-                if (state == State.Run || state == State.Jump)
+                if (state != State.Duck)
                     state = State.Run;
-                else if (state == State.Duck)
+                else
                     state = State.Duck;
             }
             else
             {
                 sprite.Position = new Vector2f(sprite.Position.X, sprite.Position.Y + YVelocity * deltaTime);
             }
-            //Console.WriteLine(state);
+
             switch (state)
             {
                 case State.Run:
@@ -70,15 +68,16 @@ namespace Runner
                     {
                         state = State.Jump;
                         YVelocity = YVelocity + jumpImpulse;
-                        //break;
+                        break;
                     }
                     else if (Keyboard.IsKeyPressed(Keyboard.Key.Down))
                     {
                         state = State.Duck;
                         currentAnimFrame = (int)Anim.Duck;
-                        //break;
+                        break;
                     }
 
+                    //TODO pack the animation stuff into a method
                     if (animationClock.ElapsedTime.AsSeconds() > animationSpeed)
                     {
                         animationClock.Restart();
@@ -109,7 +108,7 @@ namespace Runner
                     {
                         state = State.Run;
                         currentAnimFrame = (int)Anim.Run;
-                        //break;
+                        break;
                     } 
                     break;
             }
@@ -118,7 +117,7 @@ namespace Runner
 
         bool IsColliding (float deltaTime, FloatRect collider)
         {
-            
+            // Naively check collisions; we don't need anything fancy (I hope)
             Vector2f oldPosition = sprite.Position;
             sprite.Position = new Vector2f(sprite.Position.X, sprite.Position.Y + YVelocity * deltaTime);
             FloatRect bounds = sprite.GetGlobalBounds();

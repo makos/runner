@@ -10,24 +10,27 @@ namespace Runner
 {
     class GameManager
     {
-        public List<IEntity> entities = new List<IEntity>();
+        enum GameState
+        {
+            Menu, Play
+        }
 
-
-        private Sprite[] playerSprites = new Sprite[2];
+        // I feel like something can be done about all those variables, I just don't know what...
+        private Texture[] playerTextures = new Texture[8]; // 8 sprites in the spritesheet
         private RenderWindow window;
         private Image spriteSheet;
-        private Dictionary<String, Vector2i> spriteSheetDict;
+        private Dictionary<String, Vector2i> spriteSheetDict; // dictionary to read coordinates of sprites in spritesheet from xml file
         private Player player;
-        private Vector2i playerSize = new Vector2i(44, 47);
-        private Clock clock;
-        private Clock speedClock;
+        private Vector2i playerSize = new Vector2i(44, 47); // hard-coded player sprite size information
+        private Vector2i playerDuckSize = new Vector2i(59, 47);
+        private Clock clock; // FPS clock
+        private Clock speedClock; // advances the game speed (difficulty)
         private Level level;
 
         public GameManager(RenderWindow window, string spriteSheetFp)
         {
             this.window = window;
             spriteSheet = new Image(spriteSheetFp);
-
             window.SetFramerateLimit(60);
             // Register events
             window.Closed += new EventHandler(OnClose);
@@ -35,16 +38,30 @@ namespace Runner
 
             LoadSpriteCoords();
 
-            for (int i = 0; i < 2; i++)
+            // Load textures into the array to be passed 
+            for (int i = 0; i < 8; i++)
             {
-                playerSprites[i] = new Sprite(new Texture(spriteSheet,
-                                   new IntRect(new Vector2i(spriteSheetDict["TREX"].X + (playerSize.X * i), spriteSheetDict["TREX"].Y),
-                                   playerSize)));
+                // Because last two (ducking) sprites are different width, we have to check for it
+                // This doesn't work, thanks google
+                // TODO
+                if (i > 5)
+                {
+                    Console.WriteLine(spriteSheetDict["TREX"].X + (playerSize.X * i));
+                    playerTextures[i] = new Texture(spriteSheet,
+                                   new IntRect(new Vector2i(spriteSheetDict["TREX"].X + (playerSize.X  * i), spriteSheetDict["TREX"].Y),
+                                   playerDuckSize));
+                }
+                else
+                {
+                    playerTextures[i] = new Texture(spriteSheet,
+                                     new IntRect(new Vector2i(spriteSheetDict["TREX"].X + (playerSize.X * i), spriteSheetDict["TREX"].Y),
+                                     playerSize));
+                }
             }
-            Console.WriteLine(playerSprites.Length);
+
+
             level = new Level(new Texture(spriteSheet, new IntRect(spriteSheetDict["GROUND"], new Vector2i(1200, 14))));
-            player = new Player(level, playerSprites, new Vector2f(100f, 300f));
-            
+            player = new Player(level, ref playerTextures, new Vector2f(100f, 300f));
             clock = new Clock();
             speedClock = new Clock();
 

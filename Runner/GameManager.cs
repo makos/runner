@@ -16,13 +16,14 @@ namespace Runner
         }
 
         // I feel like something can be done about all those variables, I just don't know what...
-        private Texture[] playerTextures = new Texture[8]; // 8 sprites in the spritesheet
+        private Texture[] playerRunTextures = new Texture[6]; // 6 run sprites in the spritesheet
+        private Texture[] playerDuckTextures = new Texture[2];
         private RenderWindow window;
         private Image spriteSheet;
         private Dictionary<String, Vector2i> spriteSheetDict; // dictionary to read coordinates of sprites in spritesheet from xml file
         private Player player;
         private Vector2i playerSize = new Vector2i(44, 47); // hard-coded player sprite size information
-        private Vector2i playerDuckSize = new Vector2i(59, 47);
+        private Vector2i playerDuckSize = new Vector2i(59, 30);
         private Clock clock; // FPS clock
         private Clock speedClock; // advances the game speed (difficulty)
         private Level level;
@@ -39,30 +40,30 @@ namespace Runner
             LoadSpriteCoords();
 
             // Load textures into the array to be passed 
-            for (int i = 0; i < 8; i++)
-            {
-                // TODO
-                // Because last two (ducking) sprites are different width, we have to check for it
-                // This doesn't work, thanks google
-                // Also just make this better
-                if (i > 5)
-                {
-                    Console.WriteLine(spriteSheetDict["TREX"].X + (playerSize.X * i));
-                    playerTextures[i] = new Texture(spriteSheet,
-                                   new IntRect(new Vector2i(spriteSheetDict["TREX"].X + (playerSize.X  * i), spriteSheetDict["TREX"].Y),
-                                   playerDuckSize));
-                }
-                else
-                {
-                    playerTextures[i] = new Texture(spriteSheet,
-                                     new IntRect(new Vector2i(spriteSheetDict["TREX"].X + (playerSize.X * i), spriteSheetDict["TREX"].Y),
-                                     playerSize));
-                }
-            }
+            //for (int i = 0; i < playerRunTextures.Length; i++)
+            //{
+            //    // TODO
+            //    // Because last two (ducking) sprites are different width, we have to check for it
+            //    // This doesn't work, thanks google
+            //    // Also just make this better
+            //    playerRunTextures[i] = new Texture(spriteSheet,
+            //                        new IntRect(new Vector2i(spriteSheetDict["TREX"].X + (playerSize.X * i), spriteSheetDict["TREX"].Y),
+            //                        playerSize));
+            //}
 
+            //int lastTextureUsed = spriteSheetDict["TREX"].X + (playerSize.X * 6);
+            //Console.WriteLine(lastTextureUsed + (playerDuckSize.X * 1));
+
+            //for (int i = 0; i < playerDuckTextures.Length; i++)
+            //{
+            //    playerDuckTextures[i] = new Texture(spriteSheet,
+            //                        new IntRect(new Vector2i(lastTextureUsed + (playerDuckSize.X * i), spriteSheetDict["TREX"].Y + 17),
+            //                        playerDuckSize));
+            //}
+            Texture sprites = new Texture("sprite\\sheet.png");
 
             level = new Level(new Texture(spriteSheet, new IntRect(spriteSheetDict["GROUND"], new Vector2i(1200, 14))));
-            player = new Player(level, ref playerTextures, new Vector2f(100f, 300f));
+            player = new Player(level, ref sprites, new Vector2f(100f, 300f));
             clock = new Clock();
             speedClock = new Clock();
 

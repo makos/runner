@@ -35,35 +35,18 @@ namespace Runner
             window.SetFramerateLimit(60);
             // Register events
             window.Closed += new EventHandler(OnClose);
-            window.KeyPressed += OnKeyPress;
+            
 
             LoadSpriteCoords();
 
-            // Load textures into the array to be passed 
-            //for (int i = 0; i < playerRunTextures.Length; i++)
-            //{
-            //    // TODO
-            //    // Because last two (ducking) sprites are different width, we have to check for it
-            //    // This doesn't work, thanks google
-            //    // Also just make this better
-            //    playerRunTextures[i] = new Texture(spriteSheet,
-            //                        new IntRect(new Vector2i(spriteSheetDict["TREX"].X + (playerSize.X * i), spriteSheetDict["TREX"].Y),
-            //                        playerSize));
-            //}
-
-            //int lastTextureUsed = spriteSheetDict["TREX"].X + (playerSize.X * 6);
-            //Console.WriteLine(lastTextureUsed + (playerDuckSize.X * 1));
-
-            //for (int i = 0; i < playerDuckTextures.Length; i++)
-            //{
-            //    playerDuckTextures[i] = new Texture(spriteSheet,
-            //                        new IntRect(new Vector2i(lastTextureUsed + (playerDuckSize.X * i), spriteSheetDict["TREX"].Y + 17),
-            //                        playerDuckSize));
-            //}
             Texture sprites = new Texture("sprite\\sheet.png");
 
             level = new Level(new Texture(spriteSheet, new IntRect(spriteSheetDict["GROUND"], new Vector2i(1200, 14))));
-            player = new Player(level, ref sprites, new Vector2f(100f, 300f));
+            player = new Player(window, level, ref sprites, new Vector2f(100f, 300f));
+
+            window.KeyPressed += player.KeyPressed;
+            window.KeyReleased += player.KeyReleased;
+
             clock = new Clock();
             speedClock = new Clock();
 
@@ -88,16 +71,6 @@ namespace Runner
         void OnClose(object sender, EventArgs e)
         {
             window.Close();
-        }
-
-        void OnKeyPress(object sender, KeyEventArgs e)
-        {
-            switch (e.Code)
-            {
-                case Keyboard.Key.Escape:
-                    window.Close();
-                    break;
-            }
         }
 
         void Update(float deltaTime)

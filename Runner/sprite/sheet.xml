@@ -1,6 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<!-- TODO Add dimensions of the sprite -->
 <sheet>
-  <sprite x="848" y="2">TREX</sprite>
-  <sprite x="2" y="54">GROUND</sprite>
+  <sprite x="848" y="2" width="44" height="47">TREX_JUMP</sprite>
+  <sprite x="936" y="2" width="44" height="47">TREX_RUN1</sprite>
+  <sprite x="980" y="2" width="44" height="47">TREX_RUN2</sprite>
+  <sprite x="1112" y="19" width="59" height="30">TREX_DUCK1</sprite>
+  <sprite x="1171" y="19" width="59" height="30">TREX_DUCK2</sprite>
+  <sprite x="2" y="54" width="1200" height="14">GROUND</sprite>
 </sheet>

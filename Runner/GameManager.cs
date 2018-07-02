@@ -15,12 +15,14 @@ namespace Runner
             Menu, Play
         }
 
+        //TODO: add obstacles & score
+
         // I feel like something can be done about all those variables, I just don't know what...
         private Texture[] playerRunTextures = new Texture[6]; // 6 run sprites in the spritesheet
         private Texture[] playerDuckTextures = new Texture[2];
         private RenderWindow window;
         private Image spriteSheet;
-        private Dictionary<String, Vector2i> spriteSheetDict; // dictionary to read coordinates of sprites in spritesheet from xml file
+        private Dictionary<String, IntRect> spriteSheetDict; // dictionary to read coordinates of sprites in spritesheet from xml file
         private Player player;
         private Vector2i playerSize = new Vector2i(44, 47); // hard-coded player sprite size information
         private Vector2i playerDuckSize = new Vector2i(59, 30);
@@ -35,17 +37,14 @@ namespace Runner
             window.SetFramerateLimit(60);
             // Register events
             window.Closed += new EventHandler(OnClose);
-            
+            window.KeyPressed += OnKeyPressed;
 
             LoadSpriteCoords();
 
-            Texture sprites = new Texture("sprite\\sheet.png");
+            Texture sprites = new Texture(spriteSheetFp);
 
-            level = new Level(new Texture(spriteSheet, new IntRect(spriteSheetDict["GROUND"], new Vector2i(1200, 14))));
-            player = new Player(window, level, ref sprites, new Vector2f(100f, 300f));
-
-            window.KeyPressed += player.KeyPressed;
-            window.KeyReleased += player.KeyReleased;
+            level = new Level(new Texture(spriteSheet, spriteSheetDict["GROUND"]));
+            player = new Player(window, level, ref sprites, ref spriteSheetDict, new Vector2f(100f, 300f));
 
             clock = new Clock();
             speedClock = new Clock();
@@ -73,6 +72,12 @@ namespace Runner
             window.Close();
         }
 
+        void OnKeyPressed(object sender, KeyEventArgs e)
+        {
+            if (e.Code == Keyboard.Key.Escape)
+                window.Close();
+        }
+
         void Update(float deltaTime)
         {
             player.Update(deltaTime);
@@ -88,7 +93,7 @@ namespace Runner
 
         void DrawDebugStuff()
         {
-            RectangleShape pRect = new RectangleShape((Vector2f)player.sprite.Texture.Size);
+            RectangleShape pRect = new RectangleShape(new Vector2f(player.sprite.TextureRect.Width, player.sprite.TextureRect.Height));
             pRect.Position = player.sprite.Position;
             pRect.FillColor = Color.Transparent;
             pRect.OutlineColor = Color.Magenta;
@@ -99,27 +104,31 @@ namespace Runner
 
         void LoadSpriteCoords()
         {
-            // TODO
-            // Load sprite coordinates from an xml; possibly include more info (width & height of the sprite) in a class instead of just a vector2?
             XmlDocument spriteXml = new XmlDocument();
             spriteXml.Load("sprite\\sheet.xml");
 
             XmlNodeList sprites = spriteXml.SelectNodes("//sheet/sprite");
-            spriteSheetDict = new Dictionary<string, Vector2i>();
+            spriteSheetDict = new Dictionary<string, IntRect>();
 
             foreach (XmlNode node in sprites)
             {
                 int x = 0;
                 int y = 0;
+                int width = 0;
+                int height = 0;
                 foreach (XmlAttribute attr in node.Attributes)
                 {
                     if (attr.Name == "x")
                         x = int.Parse(attr.Value);
                     else if (attr.Name == "y")
                         y = int.Parse(attr.Value);
+                    else if (attr.Name == "width")
+                        width = int.Parse(attr.Value);
+                    else if (attr.Name == "height")
+                        height = int.Parse(attr.Value);
                 }
 
-                spriteSheetDict.Add(node.InnerText, new Vector2i(x, y));
+                spriteSheetDict.Add(node.InnerText, new IntRect(x, y, width, height));
             }
         }
     }

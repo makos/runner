@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using SFML;
 using SFML.System;
 using SFML.Window;
@@ -19,103 +20,113 @@ namespace Runner
         // I really don't like having so many variables
         private RenderWindow window;
         private Texture spriteSheet;
-        private IntRect currentFrame;
-        private Vector2i idleFrames = new Vector2i(848, 2);
-        private Vector2i runFrames = new Vector2i(936, 2);
-        private Vector2i playerRunSize = new Vector2i(44, 47);
-        private Vector2i playerDuckSize = new Vector2i(59, 30);
         private float YVelocity = 0f;
         private float gravity = 10f;
-        private float jumpImpulse = -100f; // jump "force", has to be negative because 0,0 is top-left
+        private float jumpImpulse = -300f; // jump "force", has to be negative because 0,0 is top-left
         private State state;
         private Level level;
         private Clock animationClock; // switch animation frames based on this clock
         private float animationSpeed = .25f; // how quickly to switch animation frames
-        private Clock jumpTime;
-        private float jumpKeyPressedAt;
+        private List<IntRect> runFrames;
+        private IntRect jumpFrame;
+        private List<IntRect> duckFrames;
 
-        public Player(RenderWindow window, Level level, ref Texture spriteSheet, Vector2f position)
+        public Player(RenderWindow window, Level level, ref Texture spriteSheet, ref Dictionary<String, IntRect> spriteSheetDict, Vector2f position)
         {
             this.level = level;
             this.spriteSheet = spriteSheet;
             this.window = window;
-            currentFrame = new IntRect(idleFrames, playerRunSize); // First sprite on the sprite sheet
-            sprite = new Sprite(this.spriteSheet, currentFrame);
+
+            // Load animation coordinates
+            runFrames = new List<IntRect> { spriteSheetDict["TREX_RUN1"], spriteSheetDict["TREX_RUN2"] };
+            duckFrames = new List<IntRect> { spriteSheetDict["TREX_DUCK1"], spriteSheetDict["TREX_DUCK2"] };
+            jumpFrame = spriteSheetDict["TREX_JUMP"];
+
+            sprite = new Sprite(this.spriteSheet, runFrames[0]);
             sprite.Position = position;
-            
+
             state = State.Run;
             animationClock = new Clock();
-            jumpTime = new Clock();
         }
 
-        public void Update (float deltaTime)
+        public void Update(float deltaTime)
         {
             YVelocity = YVelocity + gravity;
 
             if (IsColliding(deltaTime, level.collider.GetGlobalBounds()))
             {
                 YVelocity = 0f;
+
                 if (state != State.Duck)
                     state = State.Run;
                 else
                     state = State.Duck;
             }
-            else
-            {
-                sprite.Position = new Vector2f(sprite.Position.X, sprite.Position.Y + YVelocity * deltaTime);
-            }
 
+            switch(state)
+            {
+                case State.Run:
+                    Animate();
+
+                    if (Keyboard.IsKeyPressed(Keyboard.Key.Up))
+                    {
+                        YVelocity = YVelocity + jumpImpulse;
+                        state = State.Jump;
+                    }
+                    else if (Keyboard.IsKeyPressed(Keyboard.Key.Down))
+                    {
+                        sprite.TextureRect = duckFrames[0];
+                        sprite.Position = new Vector2f(sprite.Position.X, sprite.Position.Y + 17);
+                        state = State.Duck;
+                    }
+                    break;
+
+                case State.Jump:
+                    Animate();
+                    break;
+
+                case State.Duck:
+                    Animate();
+
+                    if (!Keyboard.IsKeyPressed(Keyboard.Key.Down))
+                    {
+                        sprite.Position = new Vector2f(sprite.Position.X, sprite.Position.Y - 17);
+                        sprite.TextureRect = runFrames[0];
+                        state = State.Run;
+                    }
+                    break;
+            }
+            sprite.Position = new Vector2f(sprite.Position.X, sprite.Position.Y + YVelocity * deltaTime);
+        }
+
+        void Animate()
+        {
             switch (state)
             {
                 case State.Run:
-                    //THIS WORKS!
-                    //just move the IntRect back and forth over the loaded texture
                     if (animationClock.ElapsedTime.AsSeconds() > animationSpeed)
                     {
                         animationClock.Restart();
-                        currentFrame = new IntRect(new Vector2i(currentFrame.Left + playerRunSize.X, runFrames.Y), playerRunSize);
-                        if (currentFrame.Left == runFrames.X + (playerRunSize.X * 2))
-                        {
-                            currentFrame = new IntRect(runFrames, playerRunSize);
-                        }
-                        sprite.TextureRect = currentFrame;
+                        if (sprite.TextureRect == runFrames[0])
+                            sprite.TextureRect = runFrames[1];
+                        else
+                            sprite.TextureRect = runFrames[0];
                     }
-                    //TODO: add command patterns for key presses for variable jump height
-                    // or maybe do it with timers? i dunno
                     break;
-                case State.Duck:
-                    break;
+
                 case State.Jump:
-                    YVelocity = YVelocity + jumpImpulse;
-                    if (jumpTime.ElapsedTime.AsSeconds() < jumpKeyPressedAt + 1f)
+                    sprite.TextureRect = jumpFrame;
+                    break;
+
+                case State.Duck:
+                    if (animationClock.ElapsedTime.AsSeconds() > animationSpeed)
                     {
-                        YVelocity = YVelocity + 50;
+                        animationClock.Restart();
+                        if (sprite.TextureRect == duckFrames[0])
+                            sprite.TextureRect = duckFrames[1];
+                        else
+                            sprite.TextureRect = duckFrames[0];
                     }
-                    break;
-            }
-        }
-
-        public void KeyPressed(object sender, KeyEventArgs e)
-        {
-            Console.WriteLine(e.Code);
-            switch (e.Code)
-            {
-                case Keyboard.Key.Escape:
-                    window.Close();
-                    break;
-                case Keyboard.Key.Up:
-                    jumpKeyPressedAt = jumpTime.ElapsedTime.AsSeconds();
-                    state = State.Jump;
-                    break;
-            }
-        }
-
-        public void KeyReleased(object sender, KeyEventArgs e)
-        {
-            switch (e.Code)
-            {
-                case Keyboard.Key.Up:
-                    state = State.Run;
                     break;
             }
         }

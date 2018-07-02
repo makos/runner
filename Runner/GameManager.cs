@@ -27,7 +27,6 @@ namespace Runner
         private Vector2i playerSize = new Vector2i(44, 47); // hard-coded player sprite size information
         private Vector2i playerDuckSize = new Vector2i(59, 30);
         private Clock clock; // FPS clock
-        private Clock speedClock; // advances the game speed (difficulty)
         private Level level;
 
         public GameManager(RenderWindow window, string spriteSheetFp)
@@ -43,11 +42,10 @@ namespace Runner
 
             Texture sprites = new Texture(spriteSheetFp);
 
-            level = new Level(new Texture(spriteSheet, spriteSheetDict["GROUND"]));
+            level = new Level(ref sprites, ref spriteSheetDict);
             player = new Player(window, level, ref sprites, ref spriteSheetDict, new Vector2f(100f, 300f));
 
             clock = new Clock();
-            speedClock = new Clock();
 
             GameLoop();
         }
@@ -88,6 +86,8 @@ namespace Runner
         {
             window.Draw(level.tileOne);
             window.Draw(level.tileTwo);
+            foreach (Obstacle obstacle in level.obstacles)
+                window.Draw(obstacle.sprite);
             window.Draw(player.sprite);
         }
 

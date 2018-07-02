@@ -1,5 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <sheet>
+  <sprite x="228" y="2" width="17" height="35">CACTUS_SMALL1</sprite>
+  <sprite x="245" y="2" width="17" height="35">CACTUS_SMALL2</sprite>
+  <sprite x="262" y="2" width="17" height="35">CACTUS_SMALL3</sprite>
+  <sprite x="279" y="2" width="17" height="35">CACTUS_SMALL4</sprite>
+  <sprite x="296" y="2" width="17" height="35">CACTUS_SMALL5</sprite>
+  <sprite x="313" y="2" width="17" height="35">CACTUS_SMALL6</sprite>
+  
+  <sprite x="332" y="2" width="25" height="49">CACTUS1</sprite>
+  <sprite x="357" y="2" width="25" height="49">CACTUS2</sprite>
+  <sprite x="382" y="2" width="25" height="49">CACTUS3</sprite>
+  <sprite x="407" y="2" width="25" height="49">CACTUS4</sprite>
+  <sprite x="432" y="2" width="51" height="49">CACTUS_TRIPLE</sprite>
+  
   <sprite x="848" y="2" width="44" height="47">TREX_JUMP</sprite>
   <sprite x="936" y="2" width="44" height="47">TREX_RUN1</sprite>
   <sprite x="980" y="2" width="44" height="47">TREX_RUN2</sprite>

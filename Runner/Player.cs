@@ -21,7 +21,7 @@ namespace Runner
         private RenderWindow window;
         private Texture spriteSheet;
         private float YVelocity = 0f;
-        private float gravity = 10f;
+        private float gravity = 15f;
         private float jumpImpulse = -300f; // jump "force", has to be negative because 0,0 is top-left
         private State state;
         private Level level;
@@ -96,7 +96,7 @@ namespace Runner
                     }
                     break;
             }
-            sprite.Position = new Vector2f(sprite.Position.X, sprite.Position.Y + YVelocity * deltaTime);
+            sprite.Position = new Vector2f(sprite.Position.X, sprite.Position.Y + YVelocity * deltaTime * 1.25f);
         }
 
         void Animate()

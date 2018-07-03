@@ -12,6 +12,7 @@ namespace Runner
         public Sprite sprite;
         public int score = 1;
         public float scrollSpeedToAdd = 1f;
+        public RectangleShape collider;
 
         //private Level level;
 
@@ -21,6 +22,13 @@ namespace Runner
             //this.level = level;
 
             this.sprite.Position = position;
+
+            //Debug
+            collider = new RectangleShape(new Vector2f(this.sprite.TextureRect.Width, this.sprite.TextureRect.Height));
+            collider.Position = this.sprite.Position;
+            collider.FillColor = Color.Transparent;
+            collider.OutlineColor = Color.Magenta;
+            collider.OutlineThickness = 1f;
 
             level.obstacles.Add(this);
         }

@@ -10,13 +10,13 @@ namespace Runner
 {
     class GameManager
     {
-        enum GameState
+        enum State
         {
             Menu, Play
         }
 
         //TODO: add obstacles & score
-
+        public int score = 0;
         // I feel like something can be done about all those variables, I just don't know what...
         private Texture[] playerRunTextures = new Texture[6]; // 6 run sprites in the spritesheet
         private Texture[] playerDuckTextures = new Texture[2];
@@ -24,10 +24,9 @@ namespace Runner
         private Image spriteSheet;
         private Dictionary<String, IntRect> spriteSheetDict; // dictionary to read coordinates of sprites in spritesheet from xml file
         private Player player;
-        private Vector2i playerSize = new Vector2i(44, 47); // hard-coded player sprite size information
-        private Vector2i playerDuckSize = new Vector2i(59, 30);
         private Clock clock; // FPS clock
         private Level level;
+        private State state;
 
         public GameManager(RenderWindow window, string spriteSheetFp)
         {
@@ -42,10 +41,13 @@ namespace Runner
 
             Texture sprites = new Texture(spriteSheetFp);
 
-            level = new Level(ref sprites, ref spriteSheetDict);
+            level = new Level(this, ref sprites, ref spriteSheetDict);
             player = new Player(window, level, ref sprites, ref spriteSheetDict, new Vector2f(100f, 300f));
 
             clock = new Clock();
+
+            state = State.Play;
+            //state = State.Menu;
 
             GameLoop();
         }
@@ -56,11 +58,19 @@ namespace Runner
             {
                 float deltaTime = clock.Restart().AsSeconds();
                 window.DispatchEvents();
-                window.Clear(Color.White);
-                Update(deltaTime);
-                Draw();
-                if (Runner.debug)
-                    DrawDebugStuff();
+                switch (state)
+                {
+                    case State.Menu:
+                        DrawMenu();
+                        break;
+                    case State.Play:
+                        window.Clear(Color.White);
+                        Update(deltaTime);
+                        Draw();
+                        if (Runner.debug)
+                            DrawDebugStuff();
+                        break;
+                }
                 window.Display();
             }
         }
@@ -82,24 +92,43 @@ namespace Runner
             level.Update(deltaTime);
         }
 
+        void DrawMenu()
+        {
+
+        }
+
         void Draw()
         {
-            window.Draw(level.tileOne);
-            window.Draw(level.tileTwo);
-            foreach (Obstacle obstacle in level.obstacles)
-                window.Draw(obstacle.sprite);
-            window.Draw(player.sprite);
+            switch (state)
+            {
+                case State.Menu:
+                    
+                    break;
+                case State.Play:
+                    window.Draw(level.tileOne);
+                    window.Draw(level.tileTwo);
+                    foreach (Obstacle obstacle in level.obstacles)
+                        window.Draw(obstacle.sprite);
+                    window.Draw(player.sprite);
+                    break;
+            }
+
         }
 
         void DrawDebugStuff()
         {
-            RectangleShape pRect = new RectangleShape(new Vector2f(player.sprite.TextureRect.Width, player.sprite.TextureRect.Height));
-            pRect.Position = player.sprite.Position;
+            RectangleShape pRect = new RectangleShape(player.collider.Size);
+            pRect.Position = player.collider.Position;
             pRect.FillColor = Color.Transparent;
             pRect.OutlineColor = Color.Magenta;
             pRect.OutlineThickness = 1f;
             window.Draw(pRect);
             window.Draw(level.collider);
+            foreach (Obstacle obstacle in level.obstacles)
+            {
+                obstacle.collider.Position = obstacle.sprite.Position;
+                window.Draw(obstacle.collider);
+            }
         }
 
         void LoadSpriteCoords()

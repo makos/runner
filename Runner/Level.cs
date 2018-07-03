@@ -9,20 +9,24 @@ namespace Runner
     {
         public Sprite tileOne;
         public Sprite tileTwo;
-        public float scrollSpeed = -100f;
+        public float scrollSpeed = -300f;
         public RectangleShape collider;
         //public Sprite sprite;
         public List<Obstacle> obstacles = new List<Obstacle>();
 
         private Texture spriteSheet;
-        private Clock levelClock = new Clock();
+        private Clock scoreClock = new Clock();
+        private Clock obstacleClock = new Clock();
         private List<IntRect> cactusStd;
         private List<IntRect> cactusSmall;
         private IntRect cactusTriple;
+        private Random random = new Random();
+        private GameManager manager;
 
-        public Level(ref Texture spriteSheet, ref Dictionary<String, IntRect> spriteSheetDict)
+        public Level(GameManager manager, ref Texture spriteSheet, ref Dictionary<String, IntRect> spriteSheetDict)
         {
             this.spriteSheet = spriteSheet;
+            this.manager = manager;
             //sprite = new Sprite(spriteSheet, spriteSheetDict["GROUND"]);
 
             cactusStd = new List<IntRect> { spriteSheetDict["CACTUS1"], spriteSheetDict["CACTUS2"],
@@ -46,29 +50,42 @@ namespace Runner
             collider.OutlineColor = Color.Magenta;
             collider.OutlineThickness = 1f;
 
-            PopulateLevelOnStart();
+            //PopulateLevelOnStart();
         }
 
         void SpawnRandomObstacle()
         {
-            int randint = new Random().Next(0, cactusStd.Count);
-            Obstacle testCactus = new Obstacle(this, new Sprite(spriteSheet, cactusStd[randint]), new Vector2f(1230, 380 - cactusStd[randint].Height));
+            int randint = random.Next(0, 3);
+            if (randint == 0)
+            {
+                int index = random.Next(0, cactusStd.Count);
+                new Obstacle(this, new Sprite(spriteSheet, cactusStd[index]), new Vector2f(1230, 380 - cactusStd[index].Height));
+            }
+            else if (randint == 1)
+            {
+                int index = random.Next(0, cactusSmall.Count);
+                new Obstacle(this, new Sprite(spriteSheet, cactusSmall[index]), new Vector2f(1230, 380 - cactusSmall[index].Height));
+            }
+            else
+            {
+                new Obstacle(this, new Sprite(spriteSheet, cactusTriple), new Vector2f(1230, 380 - cactusTriple.Height));
+            }
         }
 
         void PopulateLevelOnStart()
         {
-            int randint = new Random().Next(2, 5);
+            int randint = random.Next(2, 5);
             List<int> points = GetRandomPoints(randint);
             for (int i = 0; i < randint; i++)
             {
-                int randIndex = new Random().Next(0, cactusStd.Count);
+                int randIndex = random.Next(0, cactusStd.Count);
                 Obstacle obstacle = new Obstacle(this, new Sprite(spriteSheet, cactusStd[randIndex]), new Vector2f(points[i], 380 - cactusStd[randIndex].Height));
             }
         }
 
         List<int> GetRandomPoints(int count)
         {
-            Random random = new Random();
+            //Random random = new Random();
             List<int> randomPositions = new List<int>();
             int last = 0;
 
@@ -90,13 +107,17 @@ namespace Runner
         public void Update(float deltaTime)
         {
             // Scroll the background infinitely, swap the position of tiles when they move out of screen
-            scrollSpeed = scrollSpeed - 1;
+            //scrollSpeed = scrollSpeed - 1;
             tileOne.Position = new Vector2f(tileOne.Position.X + scrollSpeed * deltaTime, 360);
             tileTwo.Position = new Vector2f(tileTwo.Position.X + scrollSpeed * deltaTime, 360);
 
-            foreach (Obstacle obstacle in obstacles)
+            for (int i = 0; i < obstacles.Count; i++)
             {
-                obstacle.sprite.Position = new Vector2f(obstacle.sprite.Position.X + scrollSpeed * deltaTime, 380 - obstacle.sprite.TextureRect.Height);
+                obstacles[i].sprite.Position = new Vector2f(obstacles[i].sprite.Position.X + scrollSpeed * deltaTime, 380 - obstacles[i].sprite.TextureRect.Height);
+                if (obstacles[i].sprite.Position.X < -50)
+                {
+                    obstacles.RemoveAt(i);
+                }
             }
 
             if (tileOne.GetGlobalBounds().Left + tileOne.TextureRect.Width < 0)
@@ -104,9 +125,18 @@ namespace Runner
             if (tileTwo.GetGlobalBounds().Left + tileTwo.TextureRect.Width < 0)
                 tileTwo.Position = new Vector2f(tileOne.GetGlobalBounds().Left + tileOne.TextureRect.Width, 360);
 
-            if (levelClock.ElapsedTime.AsSeconds() > 2f)
+            if (scoreClock.ElapsedTime.AsSeconds() > .1f)
             {
-                levelClock.Restart();
+                scoreClock.Restart();
+                manager.score++;
+            }
+
+            if (manager.score % 100 == 0)
+                scrollSpeed = scrollSpeed - 10;
+
+            if (obstacleClock.ElapsedTime.AsSeconds() > random.Next(1, 4))
+            {
+                obstacleClock.Restart();
                 SpawnRandomObstacle();
             }
         }

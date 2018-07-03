@@ -16,21 +16,22 @@ namespace Runner
         }
 
         public Sprite sprite;
+        public RectangleShape collider;
 
         // I really don't like having so many variables
         private RenderWindow window;
         private Texture spriteSheet;
         private float YVelocity = 0f;
         private float gravity = 15f;
-        private float jumpImpulse = -300f; // jump "force", has to be negative because 0,0 is top-left
+        private float jumpImpulse = -320f; // jump "force", has to be negative because 0,0 is top-left
         private State state;
         private Level level;
         private Clock animationClock; // switch animation frames based on this clock
-        private float animationSpeed = .25f; // how quickly to switch animation frames
+        private float animationSpeed = .1f; // how quickly to switch animation frames
         private List<IntRect> runFrames;
         private IntRect jumpFrame;
         private List<IntRect> duckFrames;
-
+        
         public Player(RenderWindow window, Level level, ref Texture spriteSheet, ref Dictionary<String, IntRect> spriteSheetDict, Vector2f position)
         {
             this.level = level;
@@ -44,6 +45,9 @@ namespace Runner
 
             sprite = new Sprite(this.spriteSheet, runFrames[0]);
             sprite.Position = position;
+
+            collider = new RectangleShape(new Vector2f(sprite.TextureRect.Width - 15, sprite.TextureRect.Height - 4));
+            collider.Position = new Vector2f(sprite.Position.X, sprite.Position.Y);
 
             state = State.Run;
             animationClock = new Clock();
@@ -63,12 +67,19 @@ namespace Runner
                     state = State.Duck;
             }
 
+            // Check if player hits an obstacle
+            foreach (Obstacle obstacle in level.obstacles)
+            {
+                if (IsColliding(deltaTime, obstacle.sprite.GetGlobalBounds()))
+                    Console.WriteLine("hit");
+            }
+
             switch(state)
             {
                 case State.Run:
                     Animate();
 
-                    if (Keyboard.IsKeyPressed(Keyboard.Key.Up))
+                    if (Keyboard.IsKeyPressed(Keyboard.Key.Up) || Keyboard.IsKeyPressed(Keyboard.Key.Space))
                     {
                         YVelocity = YVelocity + jumpImpulse;
                         state = State.Jump;
@@ -96,7 +107,9 @@ namespace Runner
                     }
                     break;
             }
+
             sprite.Position = new Vector2f(sprite.Position.X, sprite.Position.Y + YVelocity * deltaTime * 1.25f);
+            collider.Position = new Vector2f(collider.Position.X, sprite.Position.Y);
         }
 
         void Animate()
@@ -131,20 +144,20 @@ namespace Runner
             }
         }
 
-        bool IsColliding (float deltaTime, FloatRect collider)
+        bool IsColliding (float deltaTime, FloatRect other)
         {
             // Naively check collisions; we don't need anything fancy (I hope)
-            Vector2f oldPosition = sprite.Position;
-            sprite.Position = new Vector2f(sprite.Position.X, sprite.Position.Y + YVelocity * deltaTime);
-            FloatRect bounds = sprite.GetGlobalBounds();
+            Vector2f oldPosition = collider.Position;
+            collider.Position = new Vector2f(collider.Position.X, collider.Position.Y + YVelocity * deltaTime);
+            FloatRect bounds = collider.GetGlobalBounds();
 
-            if (bounds.Intersects(collider))
+            if (bounds.Intersects(other))
             {
-                sprite.Position = oldPosition;
+                collider.Position = oldPosition;
                 return true;
             }
 
-            sprite.Position = oldPosition;
+            collider.Position = oldPosition;
             return false;
         }
     }
